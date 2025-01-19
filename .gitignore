@@ -1,0 +1,48 @@
+# Laravel & UI Specific
+/node_modules
+/vendor
+
+# Laravel Environment Files
+.env
+.env.*.local
+
+# Laravel logs and cache
+/storage/*.key
+/storage/logs/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/framework/cache/data/*
+
+# Ignore the public/storage directory if it's symlinked to /storage/app/public
+/public/storage
+
+# Ignore compiled files
+/public/css
+/public/js
+
+# Laravel Mix and npm files
+npm-debug.log
+yarn-error.log
+
+# IDE & Editor specific files
+/.idea
+/.vscode
+/.editorconfig
+/.php_cs.cache
+/.phpstorm.meta.php
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore composer.lock if you want to update dependencies regularly
+composer.lock
+
+# Ignore node_modules for package manager
+node_modules/
+
+# Ignore dotenv local file (if any)
+.env.local
+
+# Other files or folders you don't want to push to version control
+/.git
