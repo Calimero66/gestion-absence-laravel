@@ -9,10 +9,12 @@ class Absence extends Model
 {
     protected $fillable = [
         'date',
-        'reason',
-        'type',
-        'user_id',  // The student's ID
-        'teacher_id', // The teacher's ID
+        'session',
+        'justification',
+        'penalty',
+        'status',
+        'user_id',
+        'teacher_id',
     ];
 
     // Define relationship with User (student)

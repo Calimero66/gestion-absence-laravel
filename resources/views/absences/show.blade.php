@@ -14,6 +14,10 @@
                         <li><strong>Date:</strong> {{ $absence->date }}</li>
                         <li><strong>Reason:</strong> {{ $absence->reason }}</li>
                         <li><strong>Type:</strong> {{ ucfirst($absence->type) }}</li>
+                        <li><strong>Session:</strong> {{ $absence->session }}</li>
+                        <li><strong>Justification:</strong> {{ $absence->justification ?? 'N/A' }}</li>
+                        <li><strong>Penalty:</strong> {{ $absence->penalty ? 'point' . number_format($absence->penalty, 2) : 'N/A' }}</li>
+                        <li><strong>Status:</strong> {{ ucfirst($absence->status) }}</li>
                     </ul>
                     <a href="{{ route('absences.index') }}" class="text-blue-500 hover:underline mt-4 block">
                         Back to List

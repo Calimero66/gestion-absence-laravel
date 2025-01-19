@@ -7,27 +7,43 @@ use App\Models\User;
 
 class AbsencePolicy
 {
-    // Determine if the user can view the absence
-    public function view(User $user, Absence $absence)
+    /**
+     * Determine whether the user can view any absences.
+     */
+    public function viewAny(User $user): bool
     {
-        return $user->id === $absence->user_id || $user->role === 'teacher';
+        return $user->role === 'teacher';
     }
 
-    // Determine if the user can create an absence
-    public function create(User $user)
+    /**
+     * Determine whether the user can view a specific absence.
+     */
+    public function view(User $user, Absence $absence): bool
     {
-        return $user->role === 'student'; // Only students can create absences
+        return $user->role === 'teacher' && $absence->teacher_id === $user->id;
     }
 
-    // Determine if the user can update the absence
-    public function update(User $user, Absence $absence)
+    /**
+     * Determine whether the user can create an absence.
+     */
+    public function create(User $user): bool
     {
-        return $user->id === $absence->user_id || $user->role === 'teacher';
+        return $user->role === 'teacher';
     }
 
-    // Determine if the user can delete the absence
-    public function delete(User $user, Absence $absence)
+    /**
+     * Determine whether the user can update a specific absence.
+     */
+    public function update(User $user, Absence $absence): bool
     {
-        return $user->id === $absence->user_id || $user->role === 'teacher';
+        return $user->role === 'teacher' && $absence->teacher_id === $user->id;
+    }
+
+    /**
+     * Determine whether the user can delete a specific absence.
+     */
+    public function delete(User $user, Absence $absence): bool
+    {
+        return $user->role === 'teacher' && $absence->teacher_id === $user->id;
     }
 }

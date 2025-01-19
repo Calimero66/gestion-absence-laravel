@@ -13,23 +13,43 @@
 
                     <form action="{{ route('absences.store') }}" method="POST">
                         @csrf
+
+                        <!-- Date -->
                         <div class="mb-4">
                             <label for="date" class="block text-gray-700 font-medium">Date</label>
                             <input type="date" id="date" name="date" required
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
                         </div>
+
+                        <!-- Session -->
                         <div class="mb-4">
-                            <label for="reason" class="block text-gray-700 font-medium">Reason</label>
-                            <textarea id="reason" name="reason" rows="4" required
+                            <label for="session" class="block text-gray-700 font-medium">Session</label>
+                            <input type="text" id="session" name="session" placeholder="Enter session details" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                        </div>
+
+                        <!-- Justification -->
+                        <div class="mb-4">
+                            <label for="justification" class="block text-gray-700 font-medium">Justification</label>
+                            <textarea id="justification" name="justification" rows="4"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500"></textarea>
                         </div>
+
+                        <!-- Penalty -->
                         <div class="mb-4">
-                            <label for="type" class="block text-gray-700 font-medium">Type</label>
-                            <select id="type" name="type" required
+                            <label for="penalty" class="block text-gray-700 font-medium">Penalty</label>
+                            <input type="number" id="penalty" name="penalty" step="0.01" placeholder="Enter penalty amount"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
-                                <option value="sick">Sick</option>
-                                <option value="vacation">Vacation</option>
-                                <option value="personal">Personal</option>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-4">
+                            <label for="status" class="block text-gray-700 font-medium">Status</label>
+                            <select id="status" name="status" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
 
@@ -45,6 +65,7 @@
                             </select>
                         </div>
 
+                        <!-- Submit Button -->
                         <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                             Submit
                         </button>

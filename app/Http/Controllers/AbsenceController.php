@@ -13,7 +13,13 @@ class AbsenceController extends Controller
      */
     public function index()
     {
-        $absences = Absence::with(['user', 'teacher'])->get(); // Eager load user (student) and teacher
+        // Authorize that the user can view absences
+        $this->authorize('viewAny', Absence::class);
+
+        // Fetch absences with related student and teacher data
+        $absences = Absence::with(['user', 'teacher'])
+            ->where('teacher_id', auth()->id()) // Ensure teachers only see their own absences
+            ->get();
 
         return view('absences.index', compact('absences'));
     }
@@ -23,9 +29,13 @@ class AbsenceController extends Controller
      */
     public function create()
     {
-        $students = User::where('role', 'student')->get(); // Fetch users with role 'student'
-        // $students = User::students()->get(); // Get all students // Fetch students
-        return view('absences.create', compact('students')); // Return the form view
+        // Authorize that the user can create absences
+        $this->authorize('create', Absence::class);
+
+        // Fetch all students to populate the dropdown
+        $students = User::where('role', 'student')->get();
+
+        return view('absences.create', compact('students'));
     }
 
     /**
@@ -33,21 +43,25 @@ class AbsenceController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
+        // Authorize that the user can create absences
+        $this->authorize('create', Absence::class);
+
+        // Validate request input
         $validated = $request->validate([
             'date' => 'required|date',
-            'reason' => 'required|string|max:255',
-            'type' => 'required|string|in:sick,vacation,personal',
-            'user_id' => 'required|exists:users,id', // Validate the student selection
+            'session' => 'required|string|max:255',
+            'justification' => 'nullable|string|max:255',
+            'penalty' => 'nullable|numeric|min:0',
+            'status' => 'required|in:pending,approved,rejected',
+            'user_id' => 'required|exists:users,id', // ID of the student
         ]);
 
-        // Add the authenticated teacher's ID
-        $validated['teacher_id'] = auth()->id(); // Store the authenticated teacher's ID
+        // Add teacher_id to the validated data
+        $validated['teacher_id'] = auth()->id();
 
-        // Create the new absence record, including the teacher's ID
+        // Create the absence record
         Absence::create($validated);
 
-        // Redirect to the index page with a success message
         return redirect()->route('absences.index')
             ->with('success', 'Absence added successfully!');
     }
@@ -57,7 +71,10 @@ class AbsenceController extends Controller
      */
     public function show(Absence $absence)
     {
-        return view('absences.show', compact('absence')); // Show details of a specific absence
+        // Authorize that the user can view this specific absence
+        $this->authorize('view', $absence);
+
+        return view('absences.show', compact('absence'));
     }
 
     /**
@@ -65,7 +82,10 @@ class AbsenceController extends Controller
      */
     public function edit(Absence $absence)
     {
-        return view('absences.edit', compact('absence')); // Return the edit form
+        // Authorize that the user can update this specific absence
+        $this->authorize('update', $absence);
+
+        return view('absences.edit', compact('absence'));
     }
 
     /**
@@ -73,13 +93,19 @@ class AbsenceController extends Controller
      */
     public function update(Request $request, Absence $absence)
     {
+        // Authorize that the user can update this specific absence
+        $this->authorize('update', $absence);
+
+        // Validate request input
         $validated = $request->validate([
             'date' => 'required|date',
-            'reason' => 'required|string|max:255',
-            'type' => 'required|string|in:sick,vacation,personal',
-            'student_id' => 'required|exists:users,id',
+            'session' => 'required|string|max:255',
+            'justification' => 'nullable|string|max:255',
+            'penalty' => 'nullable|numeric|min:0',
+            'status' => 'required|in:pending,approved,rejected',
         ]);
 
+        // Update the absence record
         $absence->update($validated);
 
         return redirect()->route('absences.index')
@@ -91,7 +117,11 @@ class AbsenceController extends Controller
      */
     public function destroy(Absence $absence)
     {
-        $absence->delete(); // Delete the absence
+        // Authorize that the user can delete this specific absence
+        $this->authorize('delete', $absence);
+
+        // Delete the absence record
+        $absence->delete();
 
         return redirect()->route('absences.index')
             ->with('success', 'Absence deleted successfully!');
