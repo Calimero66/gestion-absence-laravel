@@ -13,13 +13,21 @@ class AbsenceController extends Controller
      */
     public function index()
     {
-        // Authorize that the user can view absences
+        // Authorize that the user can view absences (using AbsencePolicy::viewAny)
         $this->authorize('viewAny', Absence::class);
 
-        // Fetch absences with related student and teacher data
-        $absences = Absence::with(['user', 'teacher'])
-            ->where('teacher_id', auth()->id()) // Ensure teachers only see their own absences
-            ->get();
+        // Fetch absences based on the user's role
+        if (auth()->user()->role === 'teacher') {
+            $absences = Absence::with(['user', 'teacher'])
+                ->where('teacher_id', auth()->id())
+                ->get();
+        } elseif (auth()->user()->role === 'student') {
+            $absences = Absence::with(['teacher'])
+                ->where('user_id', auth()->id())
+                ->get();
+        } else {
+            abort(403, 'Unauthorized action.');
+        }
 
         return view('absences.index', compact('absences'));
     }

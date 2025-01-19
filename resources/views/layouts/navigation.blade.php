@@ -15,7 +15,8 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <!-- Corrected route for Absence -->
+                    
+                    <!-- Check if the user is a student or teacher -->
                     <x-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.index')">
                         {{ __('Absence') }}
                     </x-nav-link>
@@ -74,7 +75,8 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <!-- Corrected route for Absence -->
+            
+            <!-- Check if the user is a student or teacher -->
             <x-responsive-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.index')">
                 {{ __('Absence') }}
             </x-responsive-nav-link>
