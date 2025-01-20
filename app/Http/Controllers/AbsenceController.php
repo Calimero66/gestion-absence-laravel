@@ -93,7 +93,32 @@ class AbsenceController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Absence $absence)
-    {
+{
+    // Check if the user is authorized to update the absence
+    if (auth()->user()->role === 'student') {
+        // Ensure only the justification upload action is allowed for students
+        $this->authorize('uploadJustification', $absence);
+
+        // Validate the justification file
+        $validated = $request->validate([
+            'justification' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+
+        // If there's an existing justification, delete it
+        if ($absence->justification && Storage::disk('public')->exists($absence->justification)) {
+            Storage::disk('public')->delete($absence->justification);
+        }
+
+        // Store the new justification file
+        $absence->update([
+            'justification' => $request->file('justification')->store('justifications', 'public')
+        ]);
+
+        return redirect()->route('absences.index')->with('success', 'Justification uploaded successfully!');
+    }
+
+    // Allow full edit for teachers
+    if (auth()->user()->role === 'teacher') {
         $this->authorize('update', $absence);
 
         $validated = $request->validate([
@@ -108,7 +133,6 @@ class AbsenceController extends Controller
             if ($absence->justification && Storage::disk('public')->exists($absence->justification)) {
                 Storage::disk('public')->delete($absence->justification);
             }
-
             $validated['justification'] = $request->file('justification')->store('justifications', 'public');
         }
 
@@ -116,6 +140,9 @@ class AbsenceController extends Controller
 
         return redirect()->route('absences.index')->with('success', 'Absence updated successfully!');
     }
+
+    return redirect()->back()->with('error', 'Unauthorized action.');
+}
 
     /**
      * Remove the specified resource from storage.

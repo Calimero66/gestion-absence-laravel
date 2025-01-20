@@ -43,15 +43,15 @@
                         </div>
 
                         <!-- Status -->
-                        <div class="mb-4">
+                        <!-- <div class="mb-4">
                             <label for="status" class="block text-gray-700 font-medium">Status</label>
-                            <select id="status" name="status" required
+                            <select id="status" name="status" readonly disabled
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
                             </select>
-                        </div>
+                        </div> -->
 
                         <!-- Select Student -->
                         <div class="mb-4">

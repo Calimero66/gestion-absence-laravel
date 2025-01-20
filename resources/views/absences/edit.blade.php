@@ -48,7 +48,7 @@
                             <label for="status" class="block text-gray-700 font-medium">Status</label>
                             <select id="status" name="status" required
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
-                                <option value="pending" @if($absence->status === 'pending') selected @endif>Pending</option>
+                                <!-- <option value="pending" @if($absence->status === 'pending') selected @endif>Pending</option> -->
                                 <option value="approved" @if($absence->status === 'approved') selected @endif>Approved</option>
                                 <option value="rejected" @if($absence->status === 'rejected') selected @endif>Rejected</option>
                             </select>
