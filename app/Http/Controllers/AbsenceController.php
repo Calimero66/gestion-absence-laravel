@@ -46,28 +46,24 @@ class AbsenceController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $this->authorize('create', Absence::class);
+{
+    $this->authorize('create', Absence::class);
 
-        $validated = $request->validate([
-            'date' => 'required|date',
-            'session' => 'required|string|max:255',
-            'justification' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'penalty' => 'nullable|numeric|min:0',
-            'status' => 'required|in:pending,approved,rejected',
-            'user_id' => 'required|exists:users,id',
-        ]);
+    $validated = $request->validate([
+        'date' => 'required|date',
+        'session' => 'required|string|max:255',
+        'penalty' => 'nullable|numeric|min:0',
+        'user_id' => 'required|exists:users,id',
+    ]);
 
-        if ($request->hasFile('justification')) {
-            $validated['justification'] = $request->file('justification')->store('justifications', 'public');
-        }
+    // Add the teacher_id automatically
+    $validated['teacher_id'] = auth()->id();
 
-        $validated['teacher_id'] = auth()->id();
-        Absence::create($validated);
+    Absence::create($validated);
 
-        return redirect()->route('absences.index')
-            ->with('success', 'Absence added successfully!');
-    }
+    return redirect()->route('absences.index')
+        ->with('success', 'Absence created successfully!');
+}
 
     /**
      * Display the specified resource.
