@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AbsenceController extends Controller
 {
@@ -13,10 +14,8 @@ class AbsenceController extends Controller
      */
     public function index()
     {
-        // Authorize that the user can view absences (using AbsencePolicy::viewAny)
         $this->authorize('viewAny', Absence::class);
 
-        // Fetch absences based on the user's role
         if (auth()->user()->role === 'teacher') {
             $absences = Absence::with(['user', 'teacher'])
                 ->where('teacher_id', auth()->id())
@@ -37,10 +36,7 @@ class AbsenceController extends Controller
      */
     public function create()
     {
-        // Authorize that the user can create absences
         $this->authorize('create', Absence::class);
-
-        // Fetch all students to populate the dropdown
         $students = User::where('role', 'student')->get();
 
         return view('absences.create', compact('students'));
@@ -51,23 +47,22 @@ class AbsenceController extends Controller
      */
     public function store(Request $request)
     {
-        // Authorize that the user can create absences
         $this->authorize('create', Absence::class);
 
-        // Validate request input
         $validated = $request->validate([
             'date' => 'required|date',
             'session' => 'required|string|max:255',
-            'justification' => 'nullable|string|max:255',
+            'justification' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'penalty' => 'nullable|numeric|min:0',
             'status' => 'required|in:pending,approved,rejected',
-            'user_id' => 'required|exists:users,id', // ID of the student
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        // Add teacher_id to the validated data
-        $validated['teacher_id'] = auth()->id();
+        if ($request->hasFile('justification')) {
+            $validated['justification'] = $request->file('justification')->store('justifications', 'public');
+        }
 
-        // Create the absence record
+        $validated['teacher_id'] = auth()->id();
         Absence::create($validated);
 
         return redirect()->route('absences.index')
@@ -79,7 +74,6 @@ class AbsenceController extends Controller
      */
     public function show(Absence $absence)
     {
-        // Authorize that the user can view this specific absence
         $this->authorize('view', $absence);
 
         return view('absences.show', compact('absence'));
@@ -90,7 +84,6 @@ class AbsenceController extends Controller
      */
     public function edit(Absence $absence)
     {
-        // Authorize that the user can update this specific absence
         $this->authorize('update', $absence);
 
         return view('absences.edit', compact('absence'));
@@ -101,23 +94,27 @@ class AbsenceController extends Controller
      */
     public function update(Request $request, Absence $absence)
     {
-        // Authorize that the user can update this specific absence
         $this->authorize('update', $absence);
 
-        // Validate request input
         $validated = $request->validate([
             'date' => 'required|date',
             'session' => 'required|string|max:255',
-            'justification' => 'nullable|string|max:255',
-            'penalty' => 'nullable|numeric|min:0',
+            'penalty' => 'nullable|numeric',
             'status' => 'required|in:pending,approved,rejected',
+            'justification' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        // Update the absence record
+        if ($request->hasFile('justification')) {
+            if ($absence->justification && Storage::disk('public')->exists($absence->justification)) {
+                Storage::disk('public')->delete($absence->justification);
+            }
+
+            $validated['justification'] = $request->file('justification')->store('justifications', 'public');
+        }
+
         $absence->update($validated);
 
-        return redirect()->route('absences.index')
-            ->with('success', 'Absence updated successfully!');
+        return redirect()->route('absences.index')->with('success', 'Absence updated successfully!');
     }
 
     /**
@@ -125,13 +122,29 @@ class AbsenceController extends Controller
      */
     public function destroy(Absence $absence)
     {
-        // Authorize that the user can delete this specific absence
         $this->authorize('delete', $absence);
 
-        // Delete the absence record
+        if ($absence->justification && Storage::disk('public')->exists($absence->justification)) {
+            Storage::disk('public')->delete($absence->justification);
+        }
+
         $absence->delete();
 
         return redirect()->route('absences.index')
             ->with('success', 'Absence deleted successfully!');
+    }
+
+    /**
+     * Download the justification file.
+     */
+    public function download(Absence $absence)
+    {
+        $this->authorize('view', $absence);
+
+        if (!$absence->justification) {
+            return redirect()->back()->with('error', 'No justification file found.');
+        }
+
+        return response()->download(storage_path('app/public/' . $absence->justification));
     }
 }

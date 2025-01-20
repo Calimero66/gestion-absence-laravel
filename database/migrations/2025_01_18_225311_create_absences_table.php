@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('absences', function (Blueprint $table) {
             $table->id();
-            $table->date('date'); // Date of absence
-            $table->string('session'); // Session or class period
-            $table->string('justification')->nullable(); // Optional justification
-            $table->decimal('penalty', 8, 2)->default(0); // Penalty (default 0)
-            $table->enum('status', ['pending', 'approved', 'rejected']); // Status of absence
-            $table->unsignedBigInteger('user_id'); // Student ID
+            $table->date('date'); 
+            $table->string('session'); 
+            $table->string('justification')->nullable(); 
+            $table->string('justification_file_path')->nullable(); // the new line
+            $table->decimal('penalty', 8, 2)->default(0.2); 
+            $table->enum('status', ['pending', 'approved', 'rejected']);
+            $table->unsignedBigInteger('user_id'); 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->unsignedBigInteger('teacher_id')->nullable(); // Teacher ID
+            $table->unsignedBigInteger('teacher_id')->nullable(); 
             $table->foreign('teacher_id')->references('id')->on('users')->onDelete('set null');
             $table->timestamps();
         });

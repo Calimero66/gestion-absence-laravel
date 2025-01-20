@@ -30,16 +30,16 @@
                         </div>
 
                         <!-- Justification -->
-                        <div class="mb-4">
+                        <!-- <div class="mb-4">
                             <label for="justification" class="block text-gray-700 font-medium">Justification</label>
                             <textarea id="justification" name="justification" rows="4"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">{{ $absence->justification }}</textarea>
-                        </div>
+                        </div> -->
 
                         <!-- Penalty -->
                         <div class="mb-4">
                             <label for="penalty" class="block text-gray-700 font-medium">Penalty</label>
-                            <input type="number" id="penalty" name="penalty" step="0.01" value="{{ $absence->penalty }}"
+                            <input type="number" id="penalty" name="penalty" step="0.2" value="{{ $absence->penalty }}"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500">
                         </div>
 

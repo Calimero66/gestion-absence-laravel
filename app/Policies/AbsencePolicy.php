@@ -4,33 +4,37 @@ namespace App\Policies;
 
 use App\Models\Absence;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AbsencePolicy
 {
+    use HandlesAuthorization;
     /**
      * Determine whether the user can view any absences.
      */
     public function viewAny(User $user): bool
-{
-    // Only teachers and students can view absences
-    return in_array($user->role, ['teacher', 'student']);
-}
+    {
+        // Only teachers and students can view absences
+        return in_array($user->role, ['teacher', 'student']);
+    }
 
     /**
      * Determine whether the user can view a specific absence.
      */
-    public function view(User $user, Absence $absence): bool
-{
-    if ($user->role === 'teacher' && $absence->teacher_id === $user->id) {
-        return true;
-    }
+    public function view(User $user, Absence $absence)
+    {
+        // If user is a teacher, they can view absences they created
+        if ($user->role === 'teacher') {
+            return $user->id === $absence->teacher_id;
+        }
 
-    if ($user->role === 'student' && $absence->user_id === $user->id) {
-        return true;
-    }
+        // If user is a student, they can only view their own absences
+        if ($user->role === 'student') {
+            return $user->id === $absence->user_id;
+        }
 
-    return false;
-}
+        return false;
+    }
     /**
      * Determine whether the user can create an absence.
      */
@@ -42,9 +46,20 @@ class AbsencePolicy
     /**
      * Determine whether the user can update a specific absence.
      */
-    public function update(User $user, Absence $absence): bool
+    public function update(User $user, Absence $absence)
     {
-        return $user->role === 'teacher' && $absence->teacher_id === $user->id;
+        // Teachers can update any field of absences they created
+        if ($user->role === 'teacher') {
+            return $user->id === $absence->teacher_id;
+        }
+
+        // Students can only upload justification for their own absences
+        if ($user->role === 'student') {
+            return $user->id === $absence->user_id;
+        }
+
+        return false;
+        
     }
 
     /**
@@ -54,4 +69,5 @@ class AbsencePolicy
     {
         return $user->role === 'teacher' && $absence->teacher_id === $user->id;
     }
+
 }
