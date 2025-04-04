@@ -6,6 +6,8 @@ use App\Models\Absence;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AbsenceNotification;
 
 class AbsenceController extends Controller
 {
@@ -46,25 +48,58 @@ class AbsenceController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $this->authorize('create', Absence::class);
-
-    $validated = $request->validate([
-        'date' => 'required|date',
-        'session' => 'required|string|max:255',
-        'penalty' => 'nullable|numeric|min:0',
-        'user_id' => 'required|exists:users,id',
-    ]);
-
-    // Add the teacher_id automatically
-    $validated['teacher_id'] = auth()->id();
-
-    Absence::create($validated);
-
-    return redirect()->route('absences.index')
-        ->with('success', 'Absence created successfully!');
-}
-
+    {
+        $this->authorize('create', Absence::class);
+    
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'session' => 'required|string|max:255',
+            'penalty' => 'nullable|numeric|min:0',
+            'user_id' => 'required|exists:users,id',
+        ]);
+    
+        $validated['teacher_id'] = auth()->id();
+        $absence = Absence::create($validated);
+    
+        try {
+            $student = User::find($validated['user_id']);
+            $totalAbsences = Absence::where('user_id', $student->id)->count();
+    
+            // Only send email if total absences is 5 or more
+            if ($totalAbsences >= 5) {
+                $message = "Dear {$student->name},\n\n";
+                $message .= "An absence has been recorded for you:\n";
+                $message .= "Date: {$absence->date}\n";
+                $message .= "Session: {$absence->session}\n";
+                $message .= "Teacher: {$absence->teacher->name}\n\n";
+    
+                // Add conditional messages based on total absences
+                if ($totalAbsences >= 10) {
+                    $message .= "ALERT: You have {$totalAbsences} absences.\n";
+                    $message .= "You must bring your parent to the administration immediately.\n";
+                } elseif ($totalAbsences >= 15) {
+                    $message .= "URGENT: DISCIPLINARY ACTION REQUIRED\n";
+                    $message .= "You have {$totalAbsences} absences.\n";
+                    $message .= "You must bring your parent to the administration IMMEDIATELY.\n";
+                } elseif ($totalAbsences >= 5) {
+                    $message .= "CAUTION: You have accumulated {$totalAbsences} absences.\n";
+                    $message .= "Please be aware that reaching 10 absences will require parental intervention.\n";
+                }
+    
+                Mail::raw($message, function ($email) use ($student, $totalAbsences) {
+                    $subject = $totalAbsences >= 15 ? 'URGENT: Parental Meeting Required' : 
+                            ($totalAbsences >= 10 ? 'ALERT: High Absence Count' : 'Absence Notification');
+                    
+                    $email->to($student->email)->subject($subject);
+                });
+            }
+    
+        } catch (\Exception $e) {
+            \Log::error('Failed to send absence notification email: ' . $e->getMessage());
+        }
+    
+        return redirect()->route('absences.index')->with('success', 'Absence created successfully!');
+    }
     /**
      * Display the specified resource.
      */
