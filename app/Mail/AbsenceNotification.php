@@ -3,58 +3,45 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Absence;
 
 class AbsenceNotification extends Mailable
 {
     use Queueable, SerializesModels;
-    public $absence;
+    private $totalAbsences;
 
-
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(Absence $absence)
+    public function __construct(private Absence $absence)
     {
-        $this->absence = $absence;
+        $this->totalAbsences = Absence::where('user_id', $absence->user_id)->count();
     }
 
-    public function build()
+        public function envelope(): Envelope
     {
-        return $this->view('emails.absence-notification')->subject('New Absence Recorded');
+        $subject = 'Absence Warning Notification';
+        
+        if ($this->totalAbsences === 15) {
+            $subject = 'SEVERE WARNING: 5-Day Exclusion - Multiple Absences';
+        } elseif ($this->totalAbsences === 10) {
+            $subject = 'WARNING: 2-Day Exclusion - Multiple Absences';
+        } elseif ($this->totalAbsences === 5) {
+            $subject = 'NOTICE: Oral Warning - Accumulated Absences';
+        }
+    
+        return new Envelope(subject: $subject);
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'Absence Notification',
-        );
-    }
-
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.absence-notification',
+            with: [
+                'absence' => $this->absence,
+                'totalAbsences' => $this->totalAbsences,
+            ]
         );
-    }
-
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
     }
 }
