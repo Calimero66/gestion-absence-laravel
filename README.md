@@ -63,7 +63,7 @@ Each level sends a **different email**, and notifications are only sent once per
 ## ⚙️ Installation
 
 ```bash
-git clone https://github.com/your-username/gestion-absence-laravel.git
+git clone https://github.com/Calimero66/gestion-absence-laravel
 cd gestion-absence-laravel
 
 composer install
