@@ -120,7 +120,6 @@ class AbsenceController extends Controller
         // Ensure only the justification upload action is allowed for students
         $this->authorize('uploadJustification', $absence);
 
-        // Validate the justification file
         $validated = $request->validate([
             'justification' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
